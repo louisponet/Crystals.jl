@@ -1,0 +1,11 @@
+name = "Crystals"
+uuid = "2c71e7ee-d617-5e33-8739-0c480ea2ee55"
+
+[deps]
+MicroLogging = "cecf6091-0e4e-54ba-8cba-f0e96a51f282"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+TranscodingStreams = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
+ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"

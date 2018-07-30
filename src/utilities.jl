@@ -6,7 +6,7 @@ using Crystals.Constants: default_tolerance
 using Crystals.Structures: Crystal
 using Crystals.SNF: smith_normal_form
 using DataFrames: nrow
-using NamedTuples: @NT
+# using NamedTuples: @NT
 using ArgCheck
 using Unitful
 using Unitful: Dimensions, NoUnits
@@ -31,7 +31,7 @@ is_unitful(a::Type{T}) where {T <: Number} = Val{:unitless}()
 is_unitful(a::Type{Quantity{T, D, U}}) where {T, D, U} = Val{:unitful}()
 
 """ Tuple holding Hart-Forcade transform """
-const HartForcadeTransform = @NT(transform::Matrix, quotient::Vector)
+const HartForcadeTransform = NamedTuple{(:transform, :quotient), Tuple{Matrix, Vector}}
 
 """
 $(SIGNATURES)
@@ -298,7 +298,7 @@ function supercell(lattice::Crystal, supercell::AbstractMatrix;
 end
 
 """ Tuple holding cell parameters """
-const CellParameters = @NT(a, b, c, α, β, γ)
+const CellParameters = NamedTuple{(:a, :b, :c, :α, :β, :γ)}
 
 """
     cell_parameters(a::Quantity, b::Quantity, c::Quantity,

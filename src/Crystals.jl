@@ -1,6 +1,7 @@
 module Crystals
 using Unitful
 using MicroLogging
+using Markdown
 export @u_str
 
 export Crystal, is_fractional, volume, round!, are_compatible_lattices
@@ -12,13 +13,13 @@ export into_voronoi, supercell, cell_parameters
 export point_group, inner_translations, is_primitive, primitive, space_group
 export Lattices
 
-if Pkg.installed("Unitful") ≤ v"0.0.4"
-    function Base.inv(x::StridedMatrix{T}) where T<:Quantity
-        m = inv(ustrip.(x))
-        iq = eltype(m)
-        reinterpret(Quantity{iq, typeof(inv(dimension(T))), typeof(inv(unit(T)))}, m)
-    end
-end
+# if Pkg.installed("Unitful") ≤ v"0.0.4"
+#     function Base.inv{T<:Quantity}(x::StridedMatrix{T})
+#         m = inv(ustrip.(x))
+#         iq = eltype(m)
+#         reinterpret(Quantity{iq, typeof(inv(dimension(T))), typeof(inv(unit(T)))}, m)
+#     end
+# end
 
 module Constants
   const default_tolerance = 1e-8
@@ -68,4 +69,4 @@ function _doc_pages()
 end
 
 end # module
-@doc Markdown.readme("Crystals") -> Crystals
+@doc readme("Crystals") -> Crystals

@@ -3,7 +3,7 @@ using MicroLogging
 using DocStringExtensions
 export AbstractCrystal, Crystal, is_fractional, volume, are_compatible_lattices, round!
 using Unitful: Quantity, Dimensions, Units, unit, ustrip
-using Missings: Missing, missing
+# using Missings: Missing, missing
 using ArgCheck: @argcheck
 using Base.Iterators: filter, drop
 
@@ -98,11 +98,12 @@ volume(cell::Matrix) = abs(det(cell))
 function volume(cell::Matrix{Quantity{T, D, U}}) where {T, D, U}
     abs(det(ustrip(cell))) * unit(eltype(cell))^3
 end
+
 """
     $(SIGNATURES)
 
 Returns the volume of a `Crystal` instance or of a cell. It comes down to computing
-``|\det(A)|`` where ``A`` is the crystal cell.
+``|\\det(A)|`` where ``A`` is the crystal cell.
 
 # Examples
 
