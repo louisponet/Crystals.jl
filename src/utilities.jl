@@ -20,15 +20,15 @@ using Base.Iterators: cycle, take
 Dimension of the input, if it has one. Arrays have a dimension if their element
 type has a uniform dimension.
 """
-eldimension{T <: AbstractArray}(u::Type{T}) = eldimension(eltype(T))
-eldimension{T, D, U}(::Type{Quantity{T, D, U}}) = D
-eldimension{T <: Number}(::Type{T}) = Dimensions{()}
+eldimension(u::Type{T}) where {T <: AbstractArray} = eldimension(eltype(T))
+eldimension(::Type{Quantity{T, D, U}}) where {T, D, U} = D
+eldimension(::Type{T}) where {T <: Number} = Dimensions{()}
 eldimension(u::DataType) = Dimensions{()}
 eldimension(u::Any) = eldimension(typeof(u))
 
 is_unitful(a::AbstractArray) = is_unitful(eltype(a))
-is_unitful{T <: Number}(a::Type{T}) = Val{:unitless}()
-is_unitful{T, D, U}(a::Type{Quantity{T, D, U}}) = Val{:unitful}()
+is_unitful(a::Type{T}) where {T <: Number} = Val{:unitless}()
+is_unitful(a::Type{Quantity{T, D, U}}) where {T, D, U} = Val{:unitful}()
 
 """ Tuple holding Hart-Forcade transform """
 const HartForcadeTransform = @NT(transform::Matrix, quotient::Vector)
@@ -165,7 +165,7 @@ True if the positions are one-to-one periodic with respect to the input cell.
 """
 function is_periodic(a::AbstractVector, b::AbstractVector, cell::AbstractMatrix;
                      tolerance::Real=default_tolerance)
-    const result = abs.(
+    result = abs.(
         mod.(to_fractional(a, cell) .- to_fractional(b, cell) + 0.5, 1) - 0.5
     ) .< tolerance
     all(result)
@@ -177,26 +177,26 @@ end
 
 Array of boolean describing whether positions in `a` are periodic with positions in `b`.
 """
-function is_periodic{T, D, U}(a::AbstractMatrix,
-                              b::AbstractVector,
-                              cell::AbstractMatrix{Quantity{T, D, U}};
-                              tolerance::Real=default_tolerance)
-    const result = abs.(
+function is_periodic(a::AbstractMatrix,
+                     b::AbstractVector,
+                     cell::AbstractMatrix{Quantity{T, D, U}};
+                     tolerance::Real=default_tolerance) where {T, D, U}
+    result = abs.(
         mod.(to_fractional(a, cell) .- to_fractional(b, cell) + 0.5, 1) - 0.5
     ) .< tolerance
     all(result, 1)
 end
-function is_periodic{T, D, U}(a::AbstractVector,
-                              b::AbstractMatrix,
-                              cell::AbstractMatrix{Quantity{T, D, U}};
-                              tolerance::Real=default_tolerance)
+function is_periodic(a::AbstractVector,
+                     b::AbstractMatrix,
+                     cell::AbstractMatrix{Quantity{T, D, U}};
+                     tolerance::Real=default_tolerance) where {T, D, U}
     is_periodic(b, a, cell, tolerance=tolerance)
 end
-function is_periodic{T, D, U}(a::AbstractMatrix,
-                              b::AbstractMatrix,
-                              cell::AbstractMatrix{Quantity{T, D, U}};
-                              tolerance::Real=default_tolerance)
-    const result = abs.(
+function is_periodic(a::AbstractMatrix,
+                     b::AbstractMatrix,
+                     cell::AbstractMatrix{Quantity{T, D, U}};
+                     tolerance::Real=default_tolerance) where {T, D, U}
+    result = abs.(
         mod.(to_fractional(a, cell) .- to_fractional(b, cell) + 0.5, 1) - 0.5
     ) .< tolerance
     all(result, 1)

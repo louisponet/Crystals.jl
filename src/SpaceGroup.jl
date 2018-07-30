@@ -21,17 +21,17 @@ lengths as the column vectors defining the cell. these new vectors are
 potentially symmetrically equivalent.
 """
 function potential_equivalents(cell::AbstractMatrix; tolerance::Real=default_tolerance)
-    const V = volume(cell)
-    const a0 = cell[:, 1]
-    const a1 = cell[:, 2]
-    const a2 = cell[:, 3]
+    V = volume(cell)
+    a0 = cell[:, 1]
+    a1 = cell[:, 2]
+    a2 = cell[:, 3]
 
     lengths = reducedim(+, cell .* cell, 1)
     max_norm = mapreduce(i -> norm(cell[:, i]), max, zero(eltype(cell)), 1:size(cell, 2))
 
-    const n0 = ceil(Integer, max_norm * norm(cross(a1, a2)) / V)
-    const n1 = ceil(Integer, max_norm * norm(cross(a2, a0)) / V)
-    const n2 = ceil(Integer, max_norm * norm(cross(a0, a1)) / V)
+    n0 = ceil(Integer, max_norm * norm(cross(a1, a2)) / V)
+    n1 = ceil(Integer, max_norm * norm(cross(a2, a0)) / V)
+    n2 = ceil(Integer, max_norm * norm(cross(a0, a1)) / V)
 
     gvectors = Any[Array{eltype(cell), 1}[] for u in 1:length(lengths)]
     for i in -n0:n0, j in -n1:n1, k in -n2:n2
@@ -53,15 +53,15 @@ G-vector triplets with the same norm as the unit-cell vectors.
 
 Implementation taken from [ENUM](http://enum.sourceforge.net/).
 """
-function point_group{T <: Number}(cell::AbstractMatrix{T};
-                                  tolerance::Real=default_tolerance)
+function point_group(cell::AbstractMatrix{T};
+                     tolerance::Real=default_tolerance) where T <: Number
     @assert size(cell, 1) == size(cell, 2)
 
     avecs, bvecs, cvecs = potential_equivalents(cell, tolerance=tolerance)
     result = Matrix{T}[eye(cell)]
 
-    const identity = eye(cell)
-    const invcell = inv(cell)
+    identity = eye(cell)
+    invcell = inv(cell)
     for i in 1:size(avecs, 2), j in 1:size(bvecs, 2), k in 1:size(cvecs, 2)
         # (potential) rotation in cartesian coordinates
         rotation = hcat(avecs[:, i], bvecs[:, j], cvecs[:, k])
@@ -84,8 +84,8 @@ function point_group{T <: Number}(cell::AbstractMatrix{T};
     result;
 end
 
-function point_group{T, D, U}(cell::AbstractMatrix{Quantity{T, D, U}};
-                              tolerance::Real=default_tolerance)
+function point_group(cell::AbstractMatrix{Quantity{T, D, U}};
+                     tolerance::Real=default_tolerance) where {T, D, U}
     point_group(ustrip.(cell), tolerance=tolerance)
 end
 
@@ -99,9 +99,9 @@ function inner_translations_impl(fractional::AbstractMatrix,
     grubcell = gruber(cell)
 
     # find species with minimum number of atoms
-    const atom_index = find_min_species_index(species)
-    const atom_center = fractional[:, atom_index]
-    const atom_type = species[atom_index]
+    atom_index = find_min_species_index(species)
+    atom_center = fractional[:, atom_index]
+    atom_type = species[atom_index]
 
     translations = []
     for site ∈ eachindex(species)
@@ -213,10 +213,10 @@ function primitive(crystal::Crystal; kwargs...)
     primitive(crystal, names(crystal.properties); kwargs...)
 end
 function primitive(crystal::Crystal, cols::Union{Symbol, AbstractVector{Symbol}}; kwargs...)
-    const species = species_ids(nrow(crystal), crystal.properties, cols)
+    species = species_ids(nrow(crystal), crystal.properties, cols)
     new_cell, indices = primitive(crystal.cell, crystal[:position], species; kwargs...)
-    const incell = into_cell(crystal[indices, :cartesian], new_cell)
-    const positions = to_same_kind(incell, incell, new_cell)
+    incell = into_cell(crystal[indices, :cartesian], new_cell)
+    positions = to_same_kind(incell, incell, new_cell)
     typeof(crystal)(new_cell, positions, crystal.properties[indices, :])
 end
 function primitive(cell::AbstractMatrix, positions::AbstractMatrix, species::AbstractVector;
@@ -304,12 +304,12 @@ function space_group_impl(cell::AbstractMatrix,
                           species::AbstractVector;
                           tolerance::Real=default_tolerance)
 
-    const grubcell = gruber(cell, tolerance=tolerance)
-    const invcell = inv(grubcell)
-    const minsite = find_min_species_index(species)
-    const minspecies = species[minsite]
-    const minpos = cartesian[:, minsite]
-    const pg_ops = point_group(grubcell, tolerance=tolerance)
+    grubcell = gruber(cell, tolerance=tolerance)
+    invcell = inv(grubcell)
+    minsite = find_min_species_index(species)
+    minspecies = species[minsite]
+    minpos = cartesian[:, minsite]
+    pg_ops = point_group(grubcell, tolerance=tolerance)
 
     # translations limited to those from one atom type to othe atom of same type
     translations = cartesian[:, species .==  minspecies]
@@ -329,7 +329,7 @@ function space_group_impl(cell::AbstractMatrix,
                 mappee == 0
             end
             if is_invariant == 0
-                const pos = pg * cartesian[:, minsite] - cartesian[:, minsite]
+                pos = pg * cartesian[:, minsite] - cartesian[:, minsite]
                 translation = into_voronoi(translations[:, trial] - pos, grubcell)
                 push!(result, AffineMap(pg, translation))
             end
@@ -357,7 +357,7 @@ function space_group(crystal::Crystal; kwargs...)
 end
 function space_group(crystal::Crystal, cols::Union{Symbol, AbstractVector{Symbol}};
                      kwargs...)
-    const species = species_ids(nrow(crystal), crystal.properties, cols)
+    species = species_ids(nrow(crystal), crystal.properties, cols)
     space_group(crystal.cell, crystal[:position], species; kwargs...)
 end
 function space_group(crystal::Crystal, species::AbstractVector{Int64}; kwargs...)

@@ -4,7 +4,7 @@ export eachatom
 import DataFrames
 
 """ Wrapper around a row/atom in a Crystal for iteration """
-immutable CrystalAtom{PARENT <: Crystal}
+struct CrystalAtom{PARENT <: Crystal}
     """ Parent crystal """
     parent::PARENT
     """ Index in parent """
@@ -20,7 +20,7 @@ end
 Base.names(a::CrystalAtom) = names(a.parent)
 
 """ Wraps crystal for iteration purposes """
-immutable AtomicIterator{PARENT <: Crystal}
+struct AtomicIterator{PARENT <: Crystal}
     """ Parent crystal structure """
     parent::PARENT
 end
@@ -36,5 +36,5 @@ Base.next(itr::AtomicIterator, i::Integer) = (CrystalAtom(itr.parent, i), i + 1)
 Base.size(itr::AtomicIterator) = (length(itr.parent), )
 Base.length(itr::AtomicIterator) = size(itr.parent, 1)
 Base.getindex(itr::AtomicIterator, i::Any) = CrystalAtom(itr.parent, i)
-Base.eltype{T <: Crystal}(::Type{AtomicIterator{T}}) = CrystalAtom{T}
+Base.eltype(::Type{AtomicIterator{T}}) where {T <: Crystal} = CrystalAtom{T}
 end

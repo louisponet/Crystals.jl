@@ -9,10 +9,10 @@ using MicroLogging
 using ArgCheck
 
 function no_opt_change_test(new, last)
-    const m_new = 16e0 * new;
-    const difference = new - last;
-    const m_new_plus_diff = m_new + difference;
-    const m_new_plus_diff_minus_m_new = m_new_plus_diff - m_new;
+    m_new = 16e0 * new;
+    difference = new - last;
+    m_new_plus_diff = m_new + difference;
+    m_new_plus_diff_minus_m_new = m_new_plus_diff - m_new;
     m_new_plus_diff_minus_m_new != 0;
 end
 
@@ -49,17 +49,17 @@ function n2_action(params::Vector, rinv::Matrix)
 end
 
 function n3_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
-    const i = params[4] ≤ -tolerance ? -1 : 1
-    const j = params[5] ≤ -tolerance ? -1 : 1
-    const k = params[6] ≤ -tolerance ? -1 : 1
+    i = params[4] ≤ -tolerance ? -1 : 1
+    j = params[5] ≤ -tolerance ? -1 : 1
+    k = params[6] ≤ -tolerance ? -1 : 1
     rinv[:, :] = rinv * [i 0 0; 0 j 0; 0 0 k]
     params[4:end] = abs.(params[4:end])
 end
 
 function n4_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
-    const i = params[4] ≥ tolerance ? -1 : 1
-    const j = params[5] ≥ tolerance ? -1 : 1
-    const k = params[6] ≥ tolerance ? -1 : 1
+    i = params[4] ≥ tolerance ? -1 : 1
+    j = params[5] ≥ tolerance ? -1 : 1
+    k = params[6] ≥ tolerance ? -1 : 1
     update = diagm([i, j, k])
     if i * j * k < 0
         if k == 1 && params[6] > -tolerance
@@ -77,7 +77,7 @@ function n4_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
 end
 
 function n5_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
-    const pos_or_neg = params[4] > tolerance ? -1 : 1
+    pos_or_neg = params[4] > tolerance ? -1 : 1
     rinv[:, :] = rinv * [1 0 0; 0 1 pos_or_neg; 0 0 1]
     params[3] += params[2] + pos_or_neg * params[4]
     params[4] += 2pos_or_neg * params[2]
@@ -85,7 +85,7 @@ function n5_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
 end
 
 function n6_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
-    const pos_or_neg = params[5] > tolerance ? -1 : 1
+    pos_or_neg = params[5] > tolerance ? -1 : 1
     rinv[:, :] = rinv * [1 0 pos_or_neg; 0 1 0; 0 0 1]
     params[3] += params[1] + pos_or_neg * params[5]
     params[4] += pos_or_neg * params[6]
@@ -93,7 +93,7 @@ function n6_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
 end
 
 function n7_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
-    const pos_or_neg = params[6] > tolerance ? -1 : 1
+    pos_or_neg = params[6] > tolerance ? -1 : 1
     rinv[:, :] = rinv * [1 pos_or_neg 0; 0 1 0; 0 0 1]
     params[2] += params[1] + pos_or_neg * params[6]
     params[4] += pos_or_neg * params[5]
@@ -129,9 +129,9 @@ the `niggly` algorithm.
 * `max_no_change::Integer`: Maximum number of times to go through algorithm
   without changes before bailing out
 """
-function gruber{T <: Number}(cell::Matrix{T};
-                             tolerance::Real=default_tolerance, itermax::Integer=50,
-                             max_no_change::Integer=10)
+function gruber(cell::Matrix{T};
+                tolerance::Real=default_tolerance, itermax::Integer=50,
+                max_no_change::Integer=10) where T <: Number
     @argcheck size(cell, 1) == size(cell, 2)
     @argcheck volume(cell) > tolerance
     if itermax ≤ 0
@@ -141,8 +141,8 @@ function gruber{T <: Number}(cell::Matrix{T};
         max_no_change = typemax(max_no_change)
     end
 
-    const ε = tolerance
-    const metric = transpose(cell) * cell
+    ε = tolerance
+    metric = transpose(cell) * cell
     params = vcat(diag(metric), [2metric[2, 3], 2metric[1, 3], 2metric[1, 2]])
     rinv = eye(size(metric, 1))
     no_change, previous = 0, -params[1:3]
@@ -179,7 +179,7 @@ function gruber{T <: Number}(cell::Matrix{T};
         condition1(params[6], params[1], params[4], params[5]) &&
             (n7_action(params, rinv; tolerance=ε); continue)
 
-        const sum_no_c = sum(params[1:2]) + sum(params[4:end])
+        sum_no_c = sum(params[1:2]) + sum(params[4:end])
         (
             sum_no_c ≤ -ε ||
             (abs(params[6] - params[1]) < ε && (2params[4] ≤ params[5] - ε)) ||
@@ -191,9 +191,9 @@ function gruber{T <: Number}(cell::Matrix{T};
     cell * rinv
 end
 
-function gruber{T, D, U}(cell::Matrix{Quantity{T, D, U}};
-                         tolerance::Real=default_tolerance, itermax::Integer=50,
-                         max_no_change::Integer=10)
+function gruber(cell::Matrix{Quantity{T, D, U}};
+                tolerance::Real=default_tolerance, itermax::Integer=50,
+                max_no_change::Integer=10) where {T, D, U}
     gruber(ustrip.(cell);
            tolerance=tolerance,
            itermax=itermax,

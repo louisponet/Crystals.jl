@@ -99,7 +99,7 @@ end
 end
 
 function none_smaller(pos::Vector, cell::Matrix)
-  const d = norm(pos)
+  d = norm(pos)
   for i = -2:2, j = -2:2, k = -2:2
     i == j == k == 0 && continue
     norm(pos + cell * [i, j, k]) < d * (1 - 1e-12)  && return false

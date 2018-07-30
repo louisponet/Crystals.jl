@@ -24,7 +24,7 @@ abstract type AbstractCrystal end
 RowIndices{T <: Integer} = Union{T, AbstractVector{T}, Range{T}, Colon}
 
 """ Describe a crystalline structure """
-type Crystal{T <: Number, D, U, P <: Number} <: AbstractCrystal
+mutable struct Crystal{T <: Number, D, U, P <: Number} <: AbstractCrystal
     """ Periodicity of the crystal structure """
     cell::Matrix{Quantity{T, D, U}}
     """ Atomic positions """
@@ -33,9 +33,9 @@ type Crystal{T <: Number, D, U, P <: Number} <: AbstractCrystal
     properties::DataFrame
 end
 
-function Crystal{C, D, U, P <: Number}(cell::Matrix{Quantity{C, D, U}},
-                                       positions::Matrix{P},
-                                       args...; kwargs...)
+function Crystal(cell::Matrix{Quantity{C, D, U}},
+                 positions::Matrix{P},
+                 args...; kwargs...) where {C, D, U, P <: Number}
     @argcheck size(cell, 1) == size(cell, 2)
     @argcheck size(positions, 1) == size(cell, 1)
 
@@ -45,14 +45,14 @@ function Crystal{C, D, U, P <: Number}(cell::Matrix{Quantity{C, D, U}},
     @argcheck nrow(properties) == 0 || nrow(properties) == size(positions, 2)
 
     if P <: Quantity
-        const Q = promote_type(Quantity{C, D, U}, P)
+        Q = promote_type(Quantity{C, D, U}, P)
         p = convert(Matrix{Q}, positions)
         Crystal{Q.parameters..., Q}(convert(Matrix{Q}, cell),
                                     convert(Matrix{Q}, positions),
                                     properties)
     else
-        const T = promote_type(C, P)
-        const Q = Quantity{T, D, U}
+        T = promote_type(C, P)
+        Q = Quantity{T, D, U}
         Crystal{T, D, U, T}(convert(Matrix{Q}, cell),
                             convert(Matrix{T}, positions),
                             properties)
@@ -60,18 +60,18 @@ function Crystal{C, D, U, P <: Number}(cell::Matrix{Quantity{C, D, U}},
 end
 
 
-function Crystal{C, D, U}(cell::Matrix{Quantity{C, D, U}}; kwargs...)
-    const dpositions = collect(filter(x -> x[1] ∈ (:position, :positions), kwargs))
-    const tpositions = collect(filter(x -> x[1] ∈ (:tposition, :tpositions), kwargs))
+function Crystal(cell::Matrix{Quantity{C, D, U}}; kwargs...) where {C, D, U}
+    dpositions = collect(filter(x -> x[1] ∈ (:position, :positions), kwargs))
+    tpositions = collect(filter(x -> x[1] ∈ (:tposition, :tpositions), kwargs))
     if length(dpositions) ≠ 0 && length(tpositions) ≠ 0
-        const positions = hcat((x[2] for x in dpositions)...,
+        positions = hcat((x[2] for x in dpositions)...,
                                transpose(hcat([x[2] for x in tpositions]...)))
     elseif length(dpositions) ≠ 0
-        const positions = hcat([x[2] for x in dpositions]...)
+        positions = hcat([x[2] for x in dpositions]...)
     elseif length(tpositions) ≠ 0
-        const positions = transpose(hcat([x[2] for x in tpositions]...))
+        positions = transpose(hcat([x[2] for x in tpositions]...))
     else
-        const positions = Matrix{Quantity{C, D, U}}(size(cell, 1), 0)
+        positions = Matrix{Quantity{C, D, U}}(size(cell, 1), 0)
     end
 
     leftover = filter(x -> x[1] ∉ (:position, :positions, :tposition, :tpositions), kwargs)
@@ -88,14 +88,14 @@ Base.length(crystal::Crystal) = size(crystal.positions, 2)
 True if the crystal structure is fractional.
 """
 is_fractional(crystal::Crystal) = is_fractional(typeof(crystal))
-is_fractional{T <: Crystal}(::Type{T}) = !(T.parameters[end] <: Quantity)
+is_fractional(::Type{T}) where {T <: Crystal} = !(T.parameters[end] <: Quantity)
 fractional_trait(crystal::Crystal) = fractional_trait(typeof(crystal))
-function fractional_trait{T <: Crystal}(::Type{T})
-    is_fractional(T) ? Val{:fractional}(): Val{:cartesian}()
+function fractional_trait(::Type{T}) where T <: Crystal
+    is_fractional(T) ? Val{:fractional}() : Val{:cartesian}()
 end
 
 volume(cell::Matrix) = abs(det(cell))
-function volume{T, D, U}(cell::Matrix{Quantity{T, D, U}})
+function volume(cell::Matrix{Quantity{T, D, U}}) where {T, D, U}
     abs(det(ustrip(cell))) * unit(eltype(cell))^3
 end
 """
@@ -188,16 +188,16 @@ And vice-versa.
 function position_for_crystal(crystal::Crystal, position::AbstractArray)
     position_for_crystal(fractional_trait(crystal), crystal.cell, position)
 end
-function position_for_crystal{T <: Quantity}(::Val{:fractional},
-                                             cell::AbstractMatrix,
-                                             position::AbstractArray{T})
+function position_for_crystal(::Val{:fractional},
+                              cell::AbstractMatrix,
+                              position::AbstractArray{T}) where T <: Quantity
     inv(cell) * position
 end
 position_for_crystal(::Val{:fractional}, ::AbstractMatrix, pos::AbstractArray) = pos
 position_for_crystal(::Val{:cartesian}, cell::AbstractMatrix, p::AbstractArray) = cell * p
-function position_for_crystal{T <: Quantity}(::Val{:cartesian},
-                                             ::AbstractMatrix,
-                                             positions::AbstractArray{T})
+function position_for_crystal(::Val{:cartesian},
+                              ::AbstractMatrix,
+                              positions::AbstractArray{T}) where T <: Quantity
     positions
 end
 position_for_crystal(a::Val, c::Crystal) = position_for_crystal(a, c.cell, c.positions)
@@ -217,8 +217,8 @@ function Base.show(io::IO, crystal::Crystal)
         println(io)
     end
     with_pos = copy(crystal.properties)
-    const name = is_fractional(crystal) ? :fractional : :Cartesian
-    const positions = [tuple(ustrip.(crystal.positions[:, i])...) for i in 1:length(crystal)]
+    name = is_fractional(crystal) ? :fractional : :Cartesian
+    positions = [tuple(ustrip.(crystal.positions[:, i])...) for i in 1:length(crystal)]
     show(io, hcat(DataFrame(Any[positions], [name]), crystal.properties),
          false, :Atom, false)
 end
@@ -305,7 +305,7 @@ end
 Base.getindex(crystal::Crystal, ::Colon) = deepcopy(crystal)
 
 function Base.getindex(crystal::Crystal, symbols::AbstractVector{Symbol})
-    const specials = symbols ∩ RESERVED_COLUMNS
+    specials = symbols ∩ RESERVED_COLUMNS
     if length(specials) == 0
         return crystal.properties[symbols]
     elseif length(specials) > 1 && length(setdiff(specials, (:x, :y, :z))) == 0
@@ -322,10 +322,10 @@ function Base.getindex(crystal::Crystal, symbols::AbstractVector{Symbol})
         args = collect(filter(x -> x ≠ :position, symbols))
         typeof(crystal)(crystal.cell, crystal.positions, crystal.properties[args])
     elseif specials[1] == :cartesian || specials[1] == :fractional
-        const T, D, U = typeof(crystal).parameters[1:3]
-        const positions = position_for_crystal(Val{specials[1]}(), crystal)
-        const args = collect(filter(x -> x ≠ specials[1], symbols))
-        const P = eltype(positions)
+        T, D, U = typeof(crystal).parameters[1:3]
+        positions = position_for_crystal(Val{specials[1]}(), crystal)
+        args = collect(filter(x -> x ≠ specials[1], symbols))
+        P = eltype(positions)
         Crystal{T, D, U, P}(crystal.cell, positions, crystal.properties[args])
     end
 end
@@ -372,7 +372,7 @@ Base.getindex(crystal::Crystal, ::Colon, ::Colon) = copy(crystal)
 Base.getindex(crystal::Crystal, row::Any, ::Colon) = Base.getindex(crystal, row)
 
 function Base.getindex(crystal::Crystal, index::RowIndices, symbols::AbstractVector{Symbol})
-    const specials = symbols ∩ RESERVED_COLUMNS
+    specials = symbols ∩ RESERVED_COLUMNS
     if length(specials) == 0
         return crystal.properties[index, symbols]
     elseif length(specials) > 1 && length(setdiff(specials, (:x, :y, :z))) == 0
@@ -391,12 +391,12 @@ function Base.getindex(crystal::Crystal, index::RowIndices, symbols::AbstractVec
                         hcat(crystal.positions[:, index]),
                         crystal.properties[index, args])
     else
-        const T, D, U = typeof(crystal).parameters[1:3]
-        const positions = position_for_crystal(Val{specials[1]}(),
+        T, D, U = typeof(crystal).parameters[1:3]
+        positions = position_for_crystal(Val{specials[1]}(),
                                                crystal.cell,
                                                crystal.positions[:, index])
-        const args = collect(filter(x -> x ≠ specials[1], symbols))
-        const P = eltype(positions)
+        args = collect(filter(x -> x ≠ specials[1], symbols))
+        P = eltype(positions)
         Crystal{T, D, U, P}(crystal.cell, hcat(positions), crystal.properties[index, args])
     end
 end
@@ -636,15 +636,15 @@ end
 
 Rounds the cell and positions of a crystal. See `round` for possible parameters.
 """
-function round!{T, D, U, TT, DD, UU}(crystal::Crystal{T, D, U, Quantity{TT, DD, UU}},
-                                     args...)
+function round!(crystal::Crystal{T, D, U, Quantity{TT, DD, UU}},
+                args...) where {T, D, U, TT, DD, UU}
     crystal.cell = round.(reinterpret(T, crystal.cell), args...) * unit(Quantity{T, D, U})
-    const punit = unit(Quantity{TT, DD, UU})
+    punit = unit(Quantity{TT, DD, UU})
     crystal[:position] = round.(reinterpret(TT, crystal[:position]), args...) * punit
     crystal
 end
 
-function round!{T, D, U, TT}(crystal::Crystal{T, D, U, TT}, args...)
+function round!(crystal::Crystal{T, D, U, TT}, args...) where {T, D, U, TT}
     crystal.cell = round.(reinterpret(T, crystal.cell), args...) * unit(Quantity{T, D, U})
     crystal[:position] = round.(crystal[:position], args...)
     crystal

@@ -13,7 +13,7 @@ export point_group, inner_translations, is_primitive, primitive, space_group
 export Lattices
 
 if Pkg.installed("Unitful") ≤ v"0.0.4"
-    function Base.inv{T<:Quantity}(x::StridedMatrix{T})
+    function Base.inv(x::StridedMatrix{T}) where T<:Quantity
         m = inv(ustrip.(x))
         iq = eltype(m)
         reinterpret(Quantity{iq, typeof(inv(dimension(T))), typeof(inv(unit(T)))}, m)
