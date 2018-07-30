@@ -2,16 +2,16 @@ module SpaceGroup
 using DocStringExtensions
 export point_group, is_primitive, primitive, space_group
 
-using Crystals.Constants: default_tolerance
-using Crystals.Structures: Crystal, volume
-using Crystals.Gruber: gruber
-using Crystals.Utilities: into_voronoi, is_periodic, into_cell, is_unitful, to_fractional
-using Crystals.Utilities: to_cartesian, to_same_kind
-using MicroLogging
+import Crystals.Constants: default_tolerance
+import Crystals.Structures: Crystal, volume
+import Crystals.Gruber: gruber
+import Crystals.Utilities: into_voronoi, is_periodic, into_cell, is_unitful, to_fractional
+import Crystals.Utilities: to_cartesian, to_same_kind
+# using MicroLogging
 using ArgCheck
-using Unitful: ustrip, Quantity, unit
-using CoordinateTransformations: AffineMap
-using DataFrames: nrow, AbstractDataFrame, groupby
+import Unitful: ustrip, Quantity, unit
+import CoordinateTransformations: AffineMap
+import DataFrames: nrow, AbstractDataFrame, groupby
 
 """
     potential_equivalents(cell::AbstractMatrix; tolerance::Real=$(default_tolerance))
@@ -243,7 +243,7 @@ function primitive_impl(cell::AbstractMatrix,
     # Looks for cell with smallest volume
     new_cell = deepcopy(grubcell)
     V = volume(new_cell)
-    for i ∈ CartesianRange(((ones(Int64, size(cell, 1)) * size(trans, 2))...))
+    for i ∈ CartesianRange(((ones(Int64, size(cell, 1)) * size(trans, 2))...,))
         issorted(i.I, lt=≤) || continue
         index = [i.I...]
         trial = trans[:, index]

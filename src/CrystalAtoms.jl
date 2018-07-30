@@ -1,5 +1,5 @@
 module CrystalAtoms
-using Crystals.Structures: Crystal, position_for_crystal
+import Crystals.Structures: Crystal, position_for_crystal
 export eachatom
 import DataFrames
 

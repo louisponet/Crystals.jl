@@ -1,6 +1,6 @@
 module Crystals
 using Unitful
-using MicroLogging
+# using MicroLogging
 using Markdown
 export @u_str
 
@@ -46,7 +46,7 @@ using .SpaceGroup
 module Lattices
   using DocStringExtensions
   using Unitful
-  using Crystals.Structures.Crystal
+  import Crystals.Structures: Crystal
 
   @template DEFAULT =
     """
@@ -69,4 +69,4 @@ function _doc_pages()
 end
 
 end # module
-@doc readme("Crystals") -> Crystals
+# @doc readme("Crystals") -> Crystals

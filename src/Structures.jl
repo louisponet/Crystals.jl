@@ -1,19 +1,16 @@
 module Structures
-using MicroLogging
+# using MicroLogging
 using DocStringExtensions
 export AbstractCrystal, Crystal, is_fractional, volume, are_compatible_lattices, round!
-using Unitful: Quantity, Dimensions, Units, unit, ustrip
-# using Missings: Missing, missing
-using ArgCheck: @argcheck
-using Base.Iterators: filter, drop
-
-using DataFrames: DataFrame, nrow, missing, index, ncol, deleterows!, eltypes
-using Crystals.Constants: default_tolerance
-import Base
-import Base: delete!
 import Unitful
+import Unitful: Quantity, Dimensions, Units, unit, ustrip, dimension, unit
+using ArgCheck: @argcheck
+import Base.Iterators: filter, drop
+
 import DataFrames
-using Unitful: dimension, unit
+import DataFrames: DataFrame, nrow, missing, index, ncol, deleterows!, eltypes
+import Crystals.Constants: default_tolerance
+import Base: delete!
 
 """ Reserved column names for special input and output """
 const RESERVED_COLUMNS = [:position, :fractional, :cartesian, :x, :y, :z]
@@ -21,7 +18,7 @@ const RESERVED_COLUMNS = [:position, :fractional, :cartesian, :x, :y, :z]
 """ Top type node for Crystals """
 abstract type AbstractCrystal end
 
-RowIndices{T <: Integer} = Union{T, AbstractVector{T}, Range{T}, Colon}
+RowIndices{T <: Integer} = Union{T, AbstractVector{T}, AbstractRange{T}, Colon}
 
 """ Describe a crystalline structure """
 mutable struct Crystal{T <: Number, D, U, P <: Number} <: AbstractCrystal
@@ -258,14 +255,14 @@ cell(m):
 │ 4    │ (1.0e-8, 2.0e-8) │ B       │ a     │
 ```
 """
-function Base.push!(crystal::Crystal, associative::Associative{Symbol, <: Any})
+function Base.push!(crystal::Crystal, associative::AbstractDict{Symbol, <: Any})
     position = position_for_crystal(crystal, associative[:position])
     crystal.positions = hcat(crystal.positions, position)
     push!(crystal.properties, associative)
     crystal
 end
 
-function Base.push!(crystal::Crystal, associative::Associative)
+function Base.push!(crystal::Crystal, associative::AbstractDict)
     position_in = get(() -> associative["position"], associative, :position)
     position = position_for_crystal(crystal, position_in)
     push!(crystal.properties, associative)
@@ -552,7 +549,7 @@ Deletes all atomic properties except for positions.
 """
 Base.delete!(crystal::Crystal, ::Colon) = (empty!(crystal.properties); crystal)
 
-Base.setindex!(crystal::Crystal, ::Void, col::Any) = delete!(crystal, col)
+Base.setindex!(crystal::Crystal, ::Nothing, col::Any) = delete!(crystal, col)
 
 """
     $(SIGNATURES)
@@ -567,7 +564,7 @@ end
 """
     deleterows!(crystal::Crystal, rows::Integer)
     deleterows!(crystal::Crystal, rows::AbstractVector{Integer})
-    deleterows!{T <: Integer}(crystal::Crystal, rows::Range{T})
+    deleterows!{T <: Integer}(crystal::Crystal, rows::AbstractRange{T})
     deleterows!(crystal::Crystal, rows::Colon)
 
 Deletes one (single integer), a few (sequence or range), or all (colon) atoms in the
@@ -592,7 +589,7 @@ end
 """
     delete!(crystal::Crystal, rows::Integer)
     delete!(crystal::Crystal, rows::AbstractVector{Integer})
-    delete!{T <: Integer}(crystal::Crystal, rows::Range{T})
+    delete!{T <: Integer}(crystal::Crystal, rows::AbstractRange{T})
     delete!(crystal::Crystal, rows::Colon)
 
 Alias for `deleterows`[@ref].

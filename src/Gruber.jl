@@ -1,11 +1,11 @@
 module Gruber
 export gruber, niggly
 
-using Crystals.Constants: default_tolerance
-using Crystals.Utilities: cell_parameters
-using Crystals.Structures: Crystal, volume
-using Unitful: unit, ustrip, Quantity
-using MicroLogging
+import Crystals.Constants: default_tolerance
+import Crystals.Utilities: cell_parameters
+import Crystals.Structures: Crystal, volume
+import Unitful: unit, ustrip, Quantity
+# using MicroLogging
 using ArgCheck
 
 function no_opt_change_test(new, last)
@@ -147,7 +147,9 @@ function gruber(cell::Matrix{T};
     rinv = eye(size(metric, 1))
     no_change, previous = 0, -params[1:3]
     iteration::Int = 0
+    totits = 0
     for iteration in 1:itermax
+        totits += 1
         condition0 =
             (a, b, d, e) -> a ≥ b + ε || (abs(a - b) < ε && abs(d) ≥ abs(e) + ε)
 
@@ -187,7 +189,7 @@ function gruber(cell::Matrix{T};
         ) || break
         n8_action(params, rinv)
     end
-    iteration == itermax && error("Reached end of iteration without converging")
+    totits == itermax && error("Reached end of iteration without converging")
     cell * rinv
 end
 

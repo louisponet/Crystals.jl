@@ -1,5 +1,5 @@
 module SNF
-using Unitful: Quantity, ustrip
+import Unitful: Quantity, ustrip
 export smith_normal_form
 
 function choose_pivot!(left::Matrix{T}, smith::Matrix{T},

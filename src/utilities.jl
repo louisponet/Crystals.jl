@@ -2,17 +2,17 @@ module Utilities
 export hart_forcade, to_fractional, to_cartesian, is_periodic, into_cell, origin_centered
 export into_voronoi, supercell, cell_parameters
 
-using Crystals.Constants: default_tolerance
-using Crystals.Structures: Crystal
-using Crystals.SNF: smith_normal_form
-using DataFrames: nrow
+import Crystals.Constants: default_tolerance
+import Crystals.Structures: Crystal
+import Crystals.SNF: smith_normal_form
+import DataFrames: nrow
 # using NamedTuples: @NT
 using ArgCheck
 using Unitful
-using Unitful: Dimensions, NoUnits
-using MicroLogging
+import Unitful: Dimensions, NoUnits
+# using MicroLogging
 using DocStringExtensions
-using Base.Iterators: cycle, take
+import Base.Iterators: cycle, take
 
 """
     eldimension(u::Any)
@@ -285,7 +285,7 @@ function supercell(lattice::Crystal, supercell::AbstractMatrix;
     result.cell = newcell
 
     positions = result[:cartesian]
-    for (i, index) in zip(1:nrow(lattice):nrow(result), CartesianRange((quotient...)))
+    for (i, index) in zip(1:nrow(lattice):nrow(result), CartesianRange((quotient...,)))
         for j in i:i+nrow(lattice)-1
             positions[:, j] += itransform * [index[u] for u in eachindex(quotient)]
         end
