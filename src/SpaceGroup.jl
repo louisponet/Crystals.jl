@@ -80,9 +80,9 @@ function point_group(cell::AbstractMatrix{T};
 
         # check rotation not in list
         index = findfirst(x -> all(ustrip.(abs.(x .- rotation)) .< tolerance), result)
-        index ≠ 0 || push!(result, rotation)
+        index ≠ nothing || push!(result, rotation)
     end
-    result;
+    result
 end
 
 function point_group(cell::AbstractMatrix{Quantity{T, D, U}};
@@ -279,7 +279,7 @@ function primitive_impl(cell::AbstractMatrix,
             species[site] == species[index] &&
             is_periodic(position, cartesian[:, index], new_cell, tolerance=tolerance)
         end
-        if k == 0
+        if k == nothing
             push!(indices, site)
         end
     end
@@ -327,9 +327,9 @@ function space_group_impl(cell::AbstractMatrix,
                     is_periodic(position, cartesian[:, atom] - minpos, grubcell;
                                 tolerance=tolerance)
                 end
-                mappee == 0
+                mappee == nothing
             end
-            if is_invariant == 0
+            if is_invariant == nothing
                 pos = pg * cartesian[:, minsite] - cartesian[:, minsite]
                 translation = into_voronoi(translations[:, trial] - pos, grubcell)
                 push!(result, AffineMap(pg, translation))

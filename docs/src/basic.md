@@ -58,7 +58,7 @@ one coordinate (and all atoms) at a time. Hence the transpose.
 
 
 ```@eval
-using Base.Markdown
+using Markdown
 using Crystals
 result = """
 !!! note
@@ -68,7 +68,7 @@ result = """
     the constructor.
 """
 result *= "    - :" * join(map(string, Crystals.Structures.RESERVED_COLUMNS), "\n    - :")
-Base.Markdown.parse(result)
+parse(result)
 ```
 
 ## Accessing the cell and atomic sites

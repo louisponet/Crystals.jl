@@ -70,4 +70,4 @@ function _doc_pages()
 end
 
 end # module
-# @doc readme("Crystals") -> Crystals
+# @doc Markdown.readme("Crystals") -> Crystals

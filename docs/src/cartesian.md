@@ -17,8 +17,7 @@ end
 ```
 ```jldoctest
 frac_crystal = Crystal([0 2.1 2.1; 2.1 0 2.1; 2.1 2.1 0]u"nm",
-                       position=[0, 0, 0],
-                       position=[0.25, 0.25, 0.25])
+                       tposition=[0 0 0;0.25 0.25 0.25])
 @assert frac_crystal[:position] === frac_crystal[:fractional]
 @assert frac_crystal[:cartesian] ≈ frac_crystal.cell * frac_crystal[:fractional]
 units = unit(eltype(frac_crystal[:cartesian]))
@@ -34,8 +33,7 @@ Cartesian coordinates instead -- by calling the constructor with positions that 
 
 ```jldoctest
 cart_crystal = Crystal([0 2.1 2.1; 2.1 0 2.1; 2.1 2.1 0]u"nm",
-                       position=[0, 0, 0]u"nm",
-                       position=[1.05, 1.05, 1.05]u"nm")
+                       tposition=[0 0 0;1.05 1.05 1.05]u"nm")
 @assert cart_crystal[:position] === cart_crystal[:cartesian]
 @assert cart_crystal[:fractional] ≈ inv(cart_crystal.cell) * cart_crystal[:cartesian]
 println(cart_crystal[:fractional])
@@ -53,8 +51,7 @@ of crystal from any other crystal, one can simply use the bracket operator:
 
 ```jldoctest
 crystal = Crystal([0 2.1 2.1; 2.1 0 2.1; 2.1 2.1 0]u"nm",
-                  position=[0, 0, 0]u"nm",
-                  position=[1.05, 1.05, 1.05]u"nm",
+                  tposition=[0 0 0;1.05 1.05 1.05]u"nm",
                   species=["Si", "Si"])
 crystal[[:fractional, :species]]
 
@@ -83,8 +80,7 @@ crystal.
 
 ```jldoctest
 frac_crystal = Crystal([0 2.1 2.1; 2.1 0 2.1; 2.1 2.1 0]u"nm",
-                       position=[0, 0, 0],
-                       position=[0.25, 0.25, 0.25])
+                       tposition=[0 0 0;0.25 0.25 0.25])
 frac_crystal[2, :position] = [1, 1, 1]u"nm"
 frac_crystal
 
@@ -107,12 +103,11 @@ Apart from `:cartesian` and `:fractional`, there are three other special column 
 ease access to specific atomic properties. `:x`, `:y`, `:z` will return an array
 representing the corresponding coordinate, in the same system -- Cartesian or fractional --
 as the crystal (and as `:position`). `:x`, `:y`, `:z`  can be used to set a specific
-coordinate as well. Only three such special names are provided. 
+coordinate as well. Only three such special names are provided.
 
 ```jldoctest
 crystal = Crystal([0 2.1 2.1; 2.1 0 2.1; 2.1 2.1 0]u"nm",
-                  position=[0, 0, 0],
-                  position=[0.25, 0.27, 0.25])
+                  tposition=[0 0 0;0.25 0.27 0.25])
 
 println("Y coordinate: ", crystal[2, :y])
 crystal[2, :y] = 0.25
