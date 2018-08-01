@@ -61,7 +61,7 @@ function n4_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
     i = params[4] ≥ tolerance ? -1 : 1
     j = params[5] ≥ tolerance ? -1 : 1
     k = params[6] ≥ tolerance ? -1 : 1
-    update = diagm([i, j, k])
+    update = diagm(0 => [i, j, k])
     if i * j * k < 0
         if k == 1 && params[6] > -tolerance
             update[3, 3] = -1

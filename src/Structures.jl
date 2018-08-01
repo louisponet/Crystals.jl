@@ -69,7 +69,7 @@ function Crystal(cell::Matrix{Quantity{C, D, U}}; kwargs...) where {C, D, U}
     elseif length(tpositions) ≠ 0
         positions = collect(transpose(hcat([x[2] for x in tpositions]...))) #FIXME: could be more useful to have an extra type parameter allowing for AbstractMatrix.
     else
-        positions = Matrix{Quantity{C, D, U}}(size(cell, 1), 0)
+        positions = Matrix{Quantity{C, D, U}}(undef, size(cell, 1), 0)
     end
 
     leftover = filter(x -> x[1] ∉ (:position, :positions, :tposition, :tpositions), kwargs)
@@ -122,7 +122,7 @@ volume(crystal::Crystal) = volume(crystal.cell)
 
 function are_compatible_lattices(cell_a::Matrix, cell_b::Matrix;
                                  digits=12, rtol=default_tolerance, atol=default_tolerance)
-    all(isinteger.(round.(inv(cell_a) * cell_b, digits))) &&
+    all(isinteger.(round.(inv(cell_a) * cell_b, digits=digits))) &&
         isapprox(ustrip(volume(cell_a)), ustrip(volume(cell_b)); rtol=rtol, atol=atol)
 end
 function are_compatible_lattices(crystal::Crystal, cell::Matrix; kwargs...)
@@ -156,7 +156,7 @@ volume, and their cell vectors are integer linear combinations of one another.
 ```jldoctest
 using Crystals, Unitful
 crystal = Crystal([0 2.1 2.1; 2.1 0 2.1; 2.1 2.1 0]u"nm")
-cells = Matrix{Int64}[eye(3)]
+cells = Matrix{Int64}[Matrix(1.0I, 3, 3)]
 while length(cells) < 5
     cell = rand(-5:5, (3, 3))
     volume(cell) == 1 && push!(cells, cell)
@@ -235,7 +235,7 @@ present in the crystal structure previously are `missing` except for the newly a
 
 ```jldoctest
 using Crystals
-crystal = Crystal(eye(2)u"km",
+crystal = Crystal(Matrix(1.0I, 2, 2)u"km",
                   tpositions=[1 1; 2 3; 4 5]u"m",
                   species=["Al", "O", "O"],
                   label=[:+, :-, :-])
@@ -263,13 +263,14 @@ function Base.push!(crystal::Crystal, associative::AbstractDict{Symbol, <: Any})
     crystal
 end
 
-function Base.push!(crystal::Crystal, associative::AbstractDict)
-    position_in = get(() -> associative["position"], associative, :position)
-    position = position_for_crystal(crystal, position_in)
-    push!(crystal.properties, associative)
-    crystal.positions = hcat(crystal.positions, position)
-    crystal
-end
+#FIXME: Do we really need to allow for pushing with strings, DataFrames went away from this.
+# function Base.push!(crystal::Crystal, associative::AbstractDict)
+#     position_in = get(() -> associative["position"], associative, :position)
+#     position = position_for_crystal(crystal, position_in)
+#     push!(crystal.properties, associative)
+#     crystal.positions = hcat(crystal.positions, position)
+#     crystal
+# end
 
 function Base.push!(crystal::Crystal, iterable::Any)
     position_in = first(iterable)
@@ -635,17 +636,17 @@ end
 
 Rounds the cell and positions of a crystal. See `round` for possible parameters.
 """
-function round!(crystal::Crystal{T, D, U, Quantity{TT, DD, UU}},
-                args...) where {T, D, U, TT, DD, UU}
-    crystal.cell = round.(reinterpret(T, crystal.cell), args...) * unit(Quantity{T, D, U})
+function round!(crystal::Crystal{T, D, U, Quantity{TT, DD, UU}}, args...;
+                kwargs...) where {T, D, U, TT, DD, UU}
+    crystal.cell = round.(reinterpret(T, crystal.cell), args...; kwargs...) * unit(Quantity{T, D, U})
     punit = unit(Quantity{TT, DD, UU})
-    crystal[:position] = round.(reinterpret(TT, crystal[:position]), args...) * punit
+    crystal[:position] = round.(reinterpret(TT, crystal[:position]), args...; kwargs...) * punit
     crystal
 end
 
-function round!(crystal::Crystal{T, D, U, TT}, args...) where {T, D, U, TT}
-    crystal.cell = round.(reinterpret(T, crystal.cell), args...) * unit(Quantity{T, D, U})
-    crystal[:position] = round.(crystal[:position], args...)
+function round!(crystal::Crystal{T, D, U, TT}, args...; kwargs...) where {T, D, U, TT}
+    crystal.cell = round.(reinterpret(T, crystal.cell), args...; kwargs...) * unit(Quantity{T, D, U})
+    crystal[:position] = round.(crystal[:position], args...; kwargs...)
     crystal
 end
 
@@ -660,7 +661,7 @@ Rounds the cell and positions of a crystal. See `Base.round` for possible parame
 using Crystals
 crystal = Crystal([0 0.501 0.501; 0.496 0.001 0.497; 0.497 0.497 0]u"nm",
                   tposition=[0.001 -0.001 -0.001; 0.25 0.251 -0.247]u"nm")
-round(crystal, 2)
+round(crystal, digits=2)
 
 # output
 
@@ -675,7 +676,7 @@ cell(nm):
 │ 2    │ (0.25, 0.25, -0.25) │
 ```
 """
-Base.round(crystal::Crystal, args...) = round!(deepcopy(crystal), args...)
+Base.round(crystal::Crystal, args...; kwargs...) = round!(deepcopy(crystal), args...; kwargs...)
 
 Base.eachindex(crystal::Crystal) = 1:nrow(crystal)
 

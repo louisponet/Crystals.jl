@@ -1,4 +1,4 @@
-crystal = Crystal(eye(2)u"nm", species=["Al", "O", "O"],
+crystal = Crystal(Matrix(1.0I, 2, 2)u"nm", species=["Al", "O", "O"],
                   position=[1 1 1; 2 3 4], label=[:+, :-, :-])
 
 @testset "> CrystalAtom, row $i" for i in 1:size(crystal, 1)
@@ -14,7 +14,7 @@ crystal = Crystal(eye(2)u"nm", species=["Al", "O", "O"],
     @test names(atom) == names(crystal)
 end
 
-crystal = Crystal(eye(2)u"nm", species=["Al", "O", "O"],
+crystal = Crystal(Matrix(1.0I, 2, 2)u"nm", species=["Al", "O", "O"],
                   position=[1 1 1; 2 3 4], label=[:+, :-, :-])
 @test eltype(eachrow(crystal)) === Crystals.CrystalAtoms.CrystalAtom{typeof(crystal)}
 @testset "> Iteration, row $i" for (i, atom) in enumerate(eachrow(crystal))
@@ -27,7 +27,7 @@ crystal = Crystal(eye(2)u"nm", species=["Al", "O", "O"],
     @test atom[:position, 1] == crystal[i, :position, 1] == 2i - 15
 end
 
-crystal = Crystal(eye(2)u"nm", species=["Al", "O", "O"],
+crystal = Crystal(Matrix(1.0I, 2, 2)u"nm", species=["Al", "O", "O"],
                   position=[1 1 1; 2 3 4], label=[:+, :-, :-])
 @testset "> map" begin
     iterated = Any[]

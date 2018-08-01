@@ -1,6 +1,6 @@
 @testset "> Construction" begin
     @testset ">> Empty 2d" begin
-        crystal = Crystal(eye(2)u"nm")
+        crystal = Crystal(Matrix(1.0I, 2, 2)u"nm")
         @test size(crystal.positions) == (2, 0)
         @test nrow(crystal.properties) == 0
         @test length(crystal) == 0
@@ -8,7 +8,7 @@
     end
 
     @testset ">> 3d with real positions" begin
-        crystal = Crystal(eye(3)u"nm", tpositions=[1 1 1; 2 3 4]u"nm")
+        crystal = Crystal(Matrix(1.0I, 3, 3)u"nm", tpositions=[1 1 1; 2 3 4]u"nm")
         @test length(crystal) == 2
         @test nrow(crystal.properties) == 0
         @test crystal.positions[:, 1] == [1, 1, 1]u"nm"
@@ -19,7 +19,7 @@
     end
 
     @testset ">> 4d with fractional positions" begin
-        crystal = Crystal(eye(4)u"nm", tpositions=[1 1 1 1; 2 3 4 5])
+        crystal = Crystal(Matrix(1.0I, 4, 4)u"nm", tpositions=[1 1 1 1; 2 3 4 5])
         @test length(crystal) == 2
         @test nrow(crystal.properties) == 0
         @test crystal.positions[:, 1] == [1, 1, 1, 1]
@@ -28,7 +28,7 @@
     end
 
     @testset ">> 2d with atomic properties" begin
-        crystal = Crystal(eye(2)u"nm", tpositions=[1 1; 2 3]u"nm",
+        crystal = Crystal(Matrix(1.0I, 2, 2)u"nm", tpositions=[1 1; 2 3]u"nm",
                           species=["Al", "O"])
         @test length(crystal) == 2
         @test nrow(crystal.properties) == 2
@@ -75,7 +75,7 @@ end
         @test Set(names(crystal.properties)) == Set([:species])
         @test crystal.properties[end, :species] == "β"
 
-        push!(crystal, Dict("species"=>"γ", "position"=>[0.1, 0.2, 0.2]u"nm"))
+        push!(crystal, Dict(:species=>"γ", :position=>[0.1, 0.2, 0.2]u"nm"))
         @test length(crystal) == 4
         @test all(crystal.positions[:, end] .≈ [0.1, 0.2, 0.2]u"nm")
         @test Set(names(crystal.properties)) == Set([:species])
@@ -85,7 +85,7 @@ end
 
 @testset "> Check direct indexing" begin
     @testset ">> getindex" begin
-        crystal = Crystal(eye(2)u"nm", species=["Al", "O", "O"],
+        crystal = Crystal(Matrix(1.0I, 2, 2)u"nm", species=["Al", "O", "O"],
                           position=[1 1 1; 2 3 4], label=[:+, :-, :-])
         @testset ">>> integer" begin
             @test typeof(crystal[1]) === typeof(crystal)
@@ -375,7 +375,7 @@ end
 @testset "> round crystal cell and positions" begin
     crystal = Crystal([0 0.501 0.501; 0.496 0.001 0.497; 0.497 0.497 0]u"nm",
                       tposition=[0.001 -0.001 -0.001; 0.25 0.251 -0.247]u"nm")
-    round!(crystal, 2)
+    round!(crystal, digits=2)
     @test crystal.cell == [0 0.5 0.5; 0.5 0 0.5; 0.5 0.5 0]u"nm"
     @test crystal[:position] == transpose([0 0 0; 0.25 0.25 -0.25]u"nm")
 end

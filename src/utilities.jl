@@ -52,7 +52,7 @@ ht = hart_forcade(fcc, fcc * supercell)
 
 println(ht)
 println("Positions in supercell:")
-for index in CartesianRange((ht.quotient...))
+for index in CartesianIndices((ht.quotient...))
     position = inv(ht.transform) * [index[u] for u in eachindex(ht.quotient)]
     println("- ", ustrip.(position), " (", unit(eltype(position)), ")")
 end
@@ -79,7 +79,7 @@ Positions in supercell:
 ```
 """
 function hart_forcade(lattice::AbstractMatrix, supercell::AbstractMatrix; digits::Integer=8)
-    fractional = convert(Matrix{Int64}, round.(inv(lattice) * supercell, digits))
+    fractional = convert(Matrix{Int64}, round.(inv(lattice) * supercell, digits=digits))
 
     snf, left, right = smith_normal_form(fractional)
 
@@ -167,7 +167,7 @@ True if the positions are one-to-one periodic with respect to the input cell.
 function is_periodic(a::AbstractVector, b::AbstractVector, cell::AbstractMatrix;
                      tolerance::Real=default_tolerance)
     result = abs.(
-        mod.(to_fractional(a, cell) .- to_fractional(b, cell) + 0.5, 1) - 0.5
+        mod.(to_fractional(a, cell) .- to_fractional(b, cell) .+ 0.5, 1) .- 0.5
     ) .< tolerance
     all(result)
 end
@@ -183,9 +183,9 @@ function is_periodic(a::AbstractMatrix,
                      cell::AbstractMatrix{Quantity{T, D, U}};
                      tolerance::Real=default_tolerance) where {T, D, U}
     result = abs.(
-        mod.(to_fractional(a, cell) .- to_fractional(b, cell) + 0.5, 1) - 0.5
+        mod.(to_fractional(a, cell) .- to_fractional(b, cell) .+ 0.5, 1) .- 0.5
     ) .< tolerance
-    all(result, 1)
+    all(result, dims=1)
 end
 function is_periodic(a::AbstractVector,
                      b::AbstractMatrix,
@@ -198,9 +198,9 @@ function is_periodic(a::AbstractMatrix,
                      cell::AbstractMatrix{Quantity{T, D, U}};
                      tolerance::Real=default_tolerance) where {T, D, U}
     result = abs.(
-        mod.(to_fractional(a, cell) .- to_fractional(b, cell) + 0.5, 1) - 0.5
+        mod.(to_fractional(a, cell) .- to_fractional(b, cell) .+ 0.5, 1) .- 0.5
     ) .< tolerance
-    all(result, 1)
+    all(result, dims=1)
 end
 
 """
@@ -286,7 +286,7 @@ function supercell(lattice::Crystal, supercell::AbstractMatrix;
     result.cell = newcell
 
     positions = result[:cartesian]
-    for (i, index) in zip(1:nrow(lattice):nrow(result), CartesianRange((quotient...,)))
+    for (i, index) in zip(1:nrow(lattice):nrow(result), CartesianIndices((quotient...,)))
         for j in i:i+nrow(lattice)-1
             positions[:, j] += itransform * [index[u] for u in eachindex(quotient)]
         end

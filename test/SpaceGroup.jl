@@ -13,15 +13,15 @@ cells = Any[
 @testset "> Potential equivalents regression $(unit(eltype(cell)))" for cell in cells
     cell = [1.5 -0.5 -0.5;  0  1 -0.5; 0.5 -0.5  1]u"nm"
     avecs, bvecs, cvecs = Crystals.SpaceGroup.potential_equivalents(cell)
-    norms = mapreducedim(x -> x*x, +, cell, 1)
+    norms = mapreduce(x -> x*x, +, cell, dims=1)
     @test size(avecs) == (3, 4)
-    @test all(mapreducedim(x -> x * x, +, avecs, 1) .== norms[1])
+    @test all(mapreduce(x -> x * x, +, avecs, dims=1) .== norms[1])
 
     @test size(bvecs) == (3, 8)
-    @test all(mapreducedim(x -> x * x, +, bvecs, 1) .== norms[2])
+    @test all(mapreduce(x -> x * x, +, bvecs, dims=1) .== norms[2])
 
     @test size(cvecs) == (3, 8)
-    @test all(mapreducedim(x -> x * x, +, cvecs, 1) .== norms[3])
+    @test all(mapreduce(x -> x * x, +, cvecs, dims=1) .== norms[3])
 end
 
 @testset "> Point group operations" begin
@@ -40,14 +40,14 @@ end
         for op in ops
             @test size(op) == (3, 3)
             transformation = inv(cell) * op * cell
-            @test all(isinteger, round.(transformation, 8))
+            @test all(isinteger, round.(transformation, digits=8))
             @test volume(transformation) ≈ 1.0
 
             if numops != 48
                 found = 0
                 for op in allops
                     transformation = inv(cell) * op * cell
-                    all(isinteger, round.(transformation, 8)) || continue
+                    all(isinteger, round.(transformation, digits=8)) || continue
                     isapprox(volume(transformation), 1, rtol=1e-8) || continue
                     found += 1
                 end

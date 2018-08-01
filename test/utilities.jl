@@ -54,9 +54,9 @@ end
     @test @inferred(is_periodic(pos, image, cell))
     @test !@inferred(is_periodic(pos, image + (rand(3) * 1e-4) * u"nm", cell))
 
-    positions = cell * rand((3, 10))
+    positions = cell * rand(Float64, (3, 10))
     images = positions + cell * rand(Int8, (3, 10))
-    positions[:, [1, 3, 4]] += rand((3, 3))u"nm"
+    positions[:, [1, 3, 4]] += rand(Float64, (3, 3))u"nm"
     @test @inferred(is_periodic(positions, images, cell))[2]
     @test all(is_periodic(positions, images, cell)[5:end])
     @test !any(is_periodic(positions, images, cell)[[1, 3, 4]])
@@ -72,7 +72,7 @@ end
     @test @inferred(is_periodic(pos, folded, cell))
     @test all(0 .≤ inv(cell) * folded .< 1)
 
-    pos = cell * (rand((3, 10)) + rand(Int8, (3, 10)))
+    pos = cell * (rand(Float64, (3, 10)) + rand(Int8, (3, 10)))
     folded = into_cell(pos, cell)
     @test all(@inferred(is_periodic(pos, folded, cell)))
     @test all(0 .≤ inv(cell) * folded .< 1)
@@ -88,7 +88,7 @@ end
     @test is_periodic(pos, folded, cell)
     @test all(-0.5 .< inv(cell) * folded .≤ 0.5)
 
-    pos = cell * (rand((3, 10)) + rand(Int8, (3, 10)))
+    pos = cell * (rand(Float64, (3, 10)) + rand(Int8, (3, 10)))
     folded = @inferred(origin_centered(pos, cell))
     @test all(is_periodic(pos, folded, cell))
     @test all(-0.5 .< inv(cell) * folded .≤ 0.5)
@@ -113,7 +113,7 @@ end
     @test is_periodic(pos, folded, cell)
     @test none_smaller(folded, cell)
 
-    pos = cell * (rand((3, 10)) + rand(Int8, (3, 10)))
+    pos = cell * (rand(Float64, (3, 10)) + rand(Int8, (3, 10)))
     folded = into_voronoi(pos, cell)
     @test all(is_periodic(pos, folded, cell))
     for i = 1:size(pos, 2)
@@ -129,9 +129,9 @@ end
   )
 
   result = supercell(lattice, lattice.cell * [-1 1 1; 1 -1 1; 1 1 -1])
-  @test result.cell ≈ eye(3)u"nm"
+  @test result.cell ≈ Matrix(1.0I, 3, 3)u"nm"
   @test nrow(result) % nrow(lattice) == 0
-  const ncells =  nrow(result) // nrow(lattice)
+  ncells =  nrow(result) // nrow(lattice)
   @test ncells == 4
   @test names(result) == ∪(names(result), (:site_id, ))
   @test all(1 .≤ result[:site_id] .≤ nrow(lattice))
@@ -140,11 +140,11 @@ end
   @test all(is_periodic(actual, expected, lattice.cell))
   @test length(unique(result[:site_id])) == nrow(lattice)
   for i in unique(result[:site_id])
-    @test countnz(result[:site_id] .== i) == ncells
+    @test count(!iszero, result[:site_id] .== i) == ncells
   end
   for atom in eachatom(result)
-      @test countnz(is_periodic(atom[:cartesian], lattice[:cartesian], lattice.cell)) == 1
-      @test countnz(is_periodic(atom[:cartesian], result[:cartesian], result.cell)) == 1
+      @test count(!iszero, is_periodic(atom[:cartesian], lattice[:cartesian], lattice.cell)) == 1
+      @test count(!iszero, is_periodic(atom[:cartesian], result[:cartesian], result.cell)) == 1
   end
 end
 

@@ -15,7 +15,7 @@ attached to it.
 
 ```julia
 using Crystals
-crystal = Crystal(eye(3)u"nm")
+crystal = Crystal(Matrix(1.0I, 3, 3)u"nm")
 @assert crystal.cell === [1 0 0; 0 1 0; 0 0 1]
 ```
 
@@ -24,7 +24,7 @@ properties:
 
 ```julia
 using Crystals
-crystal = Crystal(eye(2)u"km",
+crystal = Crystal(Matrix(1.0I, 2, 2)u"km",
                   position=transpose([1 1; 2 3; 4 5])u"m",
                   species=["Al", "O", "O"],
                   label=[:+, :-, :-])

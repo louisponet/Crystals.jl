@@ -1,6 +1,6 @@
 " Rock-salt lattice "
 rock_salt(T::Type=Float64; unit=u"nm") = Crystal(
-    eye(T, 3) * unit,
+    Matrix{T}(I, 3, 3) * unit,
     T[0.5, 0.5, 0.5] * unit,
     T[0, 0, 0] * unit,
     species=['A', 'B']

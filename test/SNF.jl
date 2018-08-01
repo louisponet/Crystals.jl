@@ -3,17 +3,17 @@
 
     @testset ">>> With zero columns" begin
       smith = [0 4 4; 0 6 12; 0 -4 -16]
-      left = eye(eltype(smith), 3)
+      left = Matrix{eltype(smith)}(I, 3, 3)
       jt = Crystals.SNF.choose_pivot!(left, smith, 1, 1)
       @test jt == 2
       @test smith == [0 4 4; 0 6 12; 0 -4 -16]
-      @test left == eye(eltype(smith), 3)
+      @test left == Matrix{eltype(smith)}(I, 3, 3)
     end
 
     @testset ">>> Switch rows" begin
       smith = [0 0 4; 0 6 12; 0 -4 -16]
       original = deepcopy(smith)
-      left = eye(eltype(smith), 3)
+      left = Matrix{eltype(smith)}(I, 3, 3)
       jt = Crystals.SNF.choose_pivot!(left, smith, 1, 1)
       @test jt == 2
       @test smith == [0 6 12; 0 0 4; 0 -4 -16]
@@ -25,20 +25,20 @@
   @testset ">> Improve col pivot" begin
     @testset ">>> All multiples" begin
       smith = [1 0 4; 0 2 12; 0 -4 -16]
-      left = eye(eltype(smith), 3)
+      left = Matrix{eltype(smith)}(I, 3, 3)
       Crystals.SNF.improve_col_pivot!(left, smith, 1, 1)
-      @test left == eye(eltype(smith), 3)
+      @test left == Matrix{eltype(smith)}(I, 3, 3)
       @test smith == [1 0 4; 0 2 12; 0 -4 -16]
 
       Crystals.SNF.improve_col_pivot!(left, smith, 2, 2)
-      @test left == eye(eltype(smith), 3)
+      @test left == Matrix{eltype(smith)}(I, 3, 3)
       @test smith == [1 0 4; 0 2 12; 0 -4 -16]
     end
 
     @testset ">>> Create multiple" begin
       smith = [1 0 4; 0 3 12; 0 -4 -16]
       original = deepcopy(smith)
-      left = eye(eltype(smith), 3)
+      left = Matrix{eltype(smith)}(I, 3, 3)
       Crystals.SNF.improve_col_pivot!(left, smith, 2, 2)
       @test all(smith[:, 2] .% smith[2, 2] .== 0)
       @test left * original == smith
@@ -49,20 +49,20 @@
   @testset ">> Improve row pivot" begin
     @testset ">>> All multiples" begin
       smith = transpose([1 0 4; 0 2 12; 0 -4 -16])
-      right = eye(eltype(smith), 3)
+      right = Matrix{eltype(smith)}(I, 3, 3)
       Crystals.SNF.improve_row_pivot!(smith, right, 1, 1)
-      @test right == eye(eltype(smith), 3)
+      @test right == Matrix{eltype(smith)}(I, 3, 3)
       @test smith == transpose([1 0 4; 0 2 12; 0 -4 -16])
 
       Crystals.SNF.improve_row_pivot!(smith, right, 2, 2)
-      @test right == eye(eltype(smith), 3)
+      @test right == Matrix{eltype(smith)}(I, 3, 3)
       @test smith == transpose([1 0 4; 0 2 12; 0 -4 -16]   )
     end
 
     @testset ">>> Create multiple" begin
       smith = transpose([1 0 4; 0 3 12; 0 -4 -16])
       original = deepcopy(smith)
-      right = eye(eltype(smith), 3)
+      right = Matrix{eltype(smith)}(I, 3, 3)
       Crystals.SNF.improve_row_pivot!(smith, right, 2, 2)
       @test all(smith[2, :] .% smith[2, 2] .== 0)
       @test original * right == smith
@@ -73,12 +73,12 @@
   @testset ">> Diagnonalize one row-column" begin
     smith = [1 2 4; 3 3 12; 5 -4 -16]
     original = deepcopy(smith)
-    right = eye(eltype(smith), 3)
-    left = eye(eltype(smith), 3)
+    right = Matrix{eltype(smith)}(I, 3, 3)
+    left = Matrix{eltype(smith)}(I, 3, 3)
     Crystals.SNF.diagonalize_at_entry!(left, smith, right, 2, 2)
     @test smith[2, 2] ≠ 0
-    @test countnz(smith[:, 2]) == 1
-    @test countnz(smith[2, :]) == 1
+    @test count(!iszero, smith[:, 2]) == 1
+    @test count(!iszero, smith[2, :]) == 1
     @test left * original * right == smith
     @test abs(det(left)) ≥ 0
     @test abs(det(right)) ≥ 0
@@ -100,7 +100,7 @@
     ]
     for smith in matrices
       original = deepcopy(smith)
-      right = eye(eltype(smith), 3)
+      right = Matrix{eltype(smith)}(I, 3, 3)
       Crystals.SNF.move_zero_entries!(smith, right)
       @test smith[:, 1] == original[:, 2]
       @test smith[:, 2] == original[:, 3]
@@ -126,7 +126,7 @@
       @test left * matrix * right == smith
       k = findfirst(x -> x == 0, diag(smith))
       if k ≠ nothing
-      @test countnz(diag(smith)[k:end]) == 0
+      @test count(!iszero, diag(smith)[k:end]) == 0
       else
         k = size(smith, 2) + 1
       end

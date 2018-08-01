@@ -1,7 +1,7 @@
 @testset "> Gruber" begin
     @testset ">>Is integer matrices (no units)" begin
         cell = [0 0.5 0.5; 0.5 0 0.5; 0.5 0.5 0]
-        const lim = 5
+        lim = 5
 
         for a00=-1:1, a10 =-lim:lim + 1, a11=-1:1, a20=-lim:lim + 1, a21=-lim:lim + 1, a22=-1:1
             a = [a00 0 0; a10 a11 0; a20 a21 a22]
@@ -10,13 +10,13 @@
             @test abs(det(cell)) > 1e-12
             @test volume(cell * a) ≈ volume(g)
             @test all(isinteger, inv(cell) * g)
-            @test all(isinteger, round.(inv(g) * cell, 8))
+            @test all(isinteger, round.(inv(g) * cell, digits=8))
         end
     end
 
     @testset ">>Is integer matrices (with units)" begin
         cell = [0 0.5 0.5; 0.5 0 0.5; 0.5 0.5 0]u"nm"
-        const lim = 5
+        lim = 5
 
         for a00=-1:1, a10 =-lim:lim + 1, a11=-1:1, a20=-lim:lim + 1, a21=-lim:lim + 1, a22=-1:1
             a = [a00 0 0; a10 a11 0; a20 a21 a22]
@@ -25,7 +25,7 @@
             @test abs(det(ustrip.(cell))) > 1e-12
             @test volume(cell * a) ≈ volume(g)
             @test all(isinteger, inv(cell) * g)
-            @test all(isinteger, round.(inv(g) * cell, 8))
+            @test all(isinteger, round.(inv(g) * cell, digits=8))
             break
         end
     end

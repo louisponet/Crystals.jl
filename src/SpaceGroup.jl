@@ -27,8 +27,8 @@ function potential_equivalents(cell::AbstractMatrix; tolerance::Real=default_tol
     a1 = cell[:, 2]
     a2 = cell[:, 3]
 
-    lengths = reducedim(+, cell .* cell, 1)
-    max_norm = mapreduce(i -> norm(cell[:, i]), max, zero(eltype(cell)), 1:size(cell, 2))
+    lengths = reduce(+, cell .* cell, dims=1)
+    max_norm = mapreduce(i -> norm(cell[:, i]), max, 1:size(cell, 2), init=zero(eltype(cell)))
 
     n0 = ceil(Integer, max_norm * norm(cross(a1, a2)) / V)
     n1 = ceil(Integer, max_norm * norm(cross(a2, a0)) / V)
@@ -59,9 +59,9 @@ function point_group(cell::AbstractMatrix{T};
     @assert size(cell, 1) == size(cell, 2)
 
     avecs, bvecs, cvecs = potential_equivalents(cell, tolerance=tolerance)
-    result = Matrix{T}[eye(cell)]
+    result = Matrix{T}[Matrix{T}(I, size(cell))]
 
-    identity = eye(cell)
+    identity = Matrix{T}(I, size(cell))
     invcell = inv(cell)
     for i in 1:size(avecs, 2), j in 1:size(bvecs, 2), k in 1:size(cvecs, 2)
         # (potential) rotation in cartesian coordinates
@@ -166,7 +166,7 @@ function species_ids(properties::AbstractDataFrame, cols::AbstractVector{Symbol}
 
     results = zeros(Int64, (nrow(props,)))
     for (i, group) in enumerate(groupby(props, cols))
-        results[group[row_ids_name]] = i
+        results[group[row_ids_name]] .= i
     end
     results
 end
@@ -198,9 +198,9 @@ is_primitive(args...; kwargs...) = size(inner_translations(args...; kwargs...), 
 """ Index to first instance of least represented species in crystal """
 function find_min_species_index(species::AbstractVector)
     unique_species = unique(species)
-    k = findmin([countnz(species .== u) for u in unique(species)])[2]
+    k = findmin([count(!iszero, species .== u) for u in unique(species)])[2]
     atom_type = unique_species[k]
-    findfirst(species, atom_type)
+    findfirst(isequal(atom_type), species)
 end
 
 
@@ -244,7 +244,7 @@ function primitive_impl(cell::AbstractMatrix,
     # Looks for cell with smallest volume
     new_cell = deepcopy(grubcell)
     V = volume(new_cell)
-    for i ∈ CartesianRange(((ones(Int64, size(cell, 1)) * size(trans, 2))...,))
+    for i ∈ CartesianIndices(((ones(Int64, size(cell, 1)) * size(trans, 2))...,))
         issorted(i.I, lt=≤) || continue
         index = [i.I...]
         trial = trans[:, index]

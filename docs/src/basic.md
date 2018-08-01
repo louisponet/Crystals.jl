@@ -15,7 +15,8 @@ attached to it.
 
 ```jldoctest
 using Crystals
-crystal = Crystal(eye(3)u"nm")
+using LinearAlgebra
+crystal = Crystal(Matrix(1.0I, 3, 3)u"nm")
 
 # output
 cell(nm):
@@ -30,10 +31,11 @@ properties:
 ```@meta
 DocTestSetup = quote
   using Crystals
-
+end
 ```
 ```jldoctest
-crystal = Crystal(eye(2)u"km",
+using LinearAlgebra
+crystal = Crystal(Matrix(1.0I, 2, 2)u"km",
                   position=transpose([1 1; 2 3; 4 5])u"m",
                   species=["Al", "O", "O"],
                   label=[:+, :-, :-])
@@ -68,7 +70,7 @@ result = """
     the constructor.
 """
 result *= "    - :" * join(map(string, Crystals.Structures.RESERVED_COLUMNS), "\n    - :")
-parse(result)
+Meta.parse(result)
 ```
 
 ## Accessing the cell and atomic sites
@@ -81,7 +83,8 @@ ways of doing this, more or less reflecting what can be done with a
 ```@meta
 DocTestSetup = quote
   using Crystals
-  crystal = Crystal(eye(2)u"km",
+  using LinearAlgebra
+  crystal = Crystal(Matrix(1.0I, 2, 2)u"km",
                   position=transpose([1 1; 2 3; 4 5])u"m",
                   species=["Al", "O", "O"],
                   label=[:+, :-, :-])
