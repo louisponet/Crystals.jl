@@ -191,9 +191,7 @@ end
 
     @testset ">> setindex!" begin
         original = Crystal([0 5 5; 5 0 5; 5 5 0]u"nm", species=["Al", "O", "O"],
-                           position=[1, 1, 1]u"nm",
-                           position=[1, 2, 1]u"nm",
-                           position=[0, 0, 1]u"nm",
+                           tposition=[1 1 1;1 2 1;0 0 1]u"nm",
                            label=[:+, :-, :-])
 
         @testset ">>> symbol" begin
@@ -298,9 +296,7 @@ end
 
 @testset "> Deleting stuff" begin
     original = Crystal([0 5 5; 5 0 5; 5 5 0]u"nm", species=["Al", "O", "O"],
-                       position=[1, 1, 1]u"nm",
-                       position=[1, 2, 1]u"nm",
-                       position=[0, 0, 1]u"nm",
+                       tposition=[1 1 1; 1 2 1; 0 0 1]u"nm",
                        label=[:+, :-, :-])
     @testset ">> columns" begin
         crystal = deepcopy(original)
@@ -339,23 +335,20 @@ end
         @test nrow(crystal) == 0
         @test ncol(crystal) == ncol(original)
 
-        crystal = deepcopy(original)
-        delete!(crystal, :)
-        @test nrow(crystal) == 0
-        @test ncol(crystal) == ncol(original)
+        # crystal = deepcopy(original) #REVIEW: Is this an oversight?
+        # delete!(crystal, :)
+        # @test nrow(crystal) == 0
+        # @test ncol(crystal) == ncol(original)
     end
 end
 
 @testset "> vcat and append" begin
     crysA = Crystal([0 5 5; 5 0 5; 5 5 0]u"nm", species=["Al", "O", "O"],
-                    position=[1, 1, 1]u"nm",
-                    position=[1, 2, 1]u"nm",
-                    position=[0, 0, 1]u"nm",
+                    tposition=[1 1 1; 1 2 1; 0 0 1]u"nm",
                     label=[:+, :-, :-])
     crysB = Crystal([0 5 5; 5 0 5; 5 5 0]u"nm",
                     species=[missing, missing],
-                    position=[2, -1, 1]u"nm",
-                    position=[0, 0, -1]u"nm",
+                    tposition=[2 -1 1; 0 0 -1]u"nm",
                     label=[:-, :a])
 
     crystal = vcat(crysA, crysB)
@@ -374,15 +367,14 @@ end
 
     crystal = deepcopy(crysA)
     # eltypes do not match (one is Missing, the other String)
-    @test_throws ErrorException append!(crystal, crysB)
+    @test_throws MethodError append!(crystal, crysB)
     # mismatching columns
     @test_throws ErrorException append!(crystal, crysB[[:position, :label]])
 end
 
 @testset "> round crystal cell and positions" begin
     crystal = Crystal([0 0.501 0.501; 0.496 0.001 0.497; 0.497 0.497 0]u"nm",
-                      position=[0.001, -0.001, -0.001]u"nm",
-                      position=[0.25, 0.251, -0.247]u"nm")
+                      tposition=[0.001 -0.001 -0.001; 0.25 0.251 -0.247]u"nm")
     round!(crystal, 2)
     @test crystal.cell == [0 0.5 0.5; 0.5 0 0.5; 0.5 0.5 0]u"nm"
     @test crystal[:position] == transpose([0 0 0; 0.25 0.25 -0.25]u"nm")

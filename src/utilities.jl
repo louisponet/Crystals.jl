@@ -9,6 +9,7 @@ import DataFrames: nrow
 # using NamedTuples: @NT
 using ArgCheck
 using Unitful
+using LinearAlgebra
 import Unitful: Dimensions, NoUnits
 # using MicroLogging
 using DocStringExtensions
@@ -31,7 +32,7 @@ is_unitful(a::Type{T}) where {T <: Number} = Val{:unitless}()
 is_unitful(a::Type{Quantity{T, D, U}}) where {T, D, U} = Val{:unitful}()
 
 """ Tuple holding Hart-Forcade transform """
-const HartForcadeTransform = NamedTuple{(:transform, :quotient), Tuple{Matrix, Vector}}
+const HartForcadeTransform = NamedTuple{(:transform, :quotient), Tuple{AbstractMatrix, AbstractVector}}
 
 """
 $(SIGNATURES)
@@ -82,7 +83,7 @@ function hart_forcade(lattice::AbstractMatrix, supercell::AbstractMatrix; digits
 
     snf, left, right = smith_normal_form(fractional)
 
-    HartForcadeTransform(left * inv(lattice), diag(snf))
+    HartForcadeTransform((left * inv(lattice), diag(snf)))
 end
 
 function Base.show(io::IO, ht::HartForcadeTransform)
@@ -298,7 +299,7 @@ function supercell(lattice::Crystal, supercell::AbstractMatrix;
 end
 
 """ Tuple holding cell parameters """
-const CellParameters = NamedTuple{(:a, :b, :c, :α, :β, :γ)}
+const CellParameters = NamedTuple{(:a, :b, :c, :α, :β, :γ), NTuple{6, Number}}
 
 """
     cell_parameters(a::Quantity, b::Quantity, c::Quantity,
@@ -334,7 +335,7 @@ function cell_parameters(cell::AbstractMatrix)
     α = acos(0.5(G[2, 3] + G[3, 2])/(c * b))u"rad"
     β = acos(0.5(G[3, 1] + G[1, 3])/(a * c))u"rad"
     γₒ = acos(0.5(G[1, 2] + G[2, 1])/(a * b))u"rad"
-    CellParameters(a, b, c, α, β, γₒ)
+    CellParameters((a, b, c, α, β, γₒ))
 end
 
 end

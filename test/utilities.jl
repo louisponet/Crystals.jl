@@ -4,10 +4,7 @@ using Crystals.Utilities: eldimension, CellParameters
 @testset "> Hart-Forcade" begin
     lattice = Crystal([0 0.5 0.5; 0.5 0 0.5; 0.5 0.5 0]u"nm", position=[0, 0, 0]u"nm")
     crystal = Crystal([1 0 0; 0 1 0; 0 0 1]u"nm",
-                      position=[0, 0, 0]u"nm",
-                      position=[0.5, 0.5, 0]u"nm",
-                      position=[0.5, 0, 0.5]u"nm",
-                      position=[0, 0.5, 0.5]u"nm")
+                      tposition=[0 0 0; 0.5 0.5 0; 0.5 0 0.5; 0 0.5 0.5]u"nm")
     hf = @inferred(hart_forcade(lattice.cell, crystal.cell))
     @test hf.quotient == [1, 2, 2]
     for i in eachindex(crystal)
@@ -156,7 +153,7 @@ end
         [0 0.5 0.5; 0.5 0 0.5; 0.5 0.5 0]u"nm",
     ]
     parameters = CellParameters[
-      CellParameters(sqrt(0.5)u"nm", sqrt(0.5)u"nm", sqrt(0.5)u"nm", 60u"°", 60u"°", 60u"°")
+      CellParameters((sqrt(0.5)u"nm", sqrt(0.5)u"nm", sqrt(0.5)u"nm", 60u"°", 60u"°", 60u"°"))
     ]
     for (cell, params) in zip(cells, parameters)
         actual_params = cell_parameters(cell)

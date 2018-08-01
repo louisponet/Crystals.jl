@@ -4,6 +4,7 @@ using DataFrames: nrow, DataFrame, ncol, deleterows!, missing, ismissing, eachro
 using Base.Test
 using Unitful
 using Documenter
+using LinearAlgebra
 
 contains(x) = y -> x ∈ y
 all_integers(x::Array, ε::AbstractFloat=1e-8) = all(abs(x - round(Integer, x)) .< ε)

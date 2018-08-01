@@ -1,8 +1,9 @@
 module SNF
+using LinearAlgebra
 import Unitful: Quantity, ustrip
 export smith_normal_form
 
-function choose_pivot!(left::Matrix{T}, smith::Matrix{T},
+function choose_pivot!(left::AbstractMatrix{T}, smith::AbstractMatrix{T},
                        istep::Integer, index::Integer=1) where T <: Integer
   index > size(smith, 2) && return 0
   while all(smith[:, index] .== 0)
@@ -17,7 +18,7 @@ function choose_pivot!(left::Matrix{T}, smith::Matrix{T},
   index
 end
 
-function improve_col_pivot!(left::Matrix{T}, smith::Matrix{T},
+function improve_col_pivot!(left::AbstractMatrix{T}, smith::AbstractMatrix{T},
                             row::Integer, col::Integer) where T <: Integer
   @assert size(left, 1) == size(left, 2) == size(smith, 1) == size(smith, 2)
   for k in 1:size(smith, 1)
@@ -36,7 +37,7 @@ function improve_col_pivot!(left::Matrix{T}, smith::Matrix{T},
   end
 end
 
-function improve_row_pivot!(smith::Matrix{T}, right::Matrix{T},
+function improve_row_pivot!(smith::AbstractMatrix{T}, right::AbstractMatrix{T},
                             row::Integer, col::Integer) where T <: Integer
   @assert size(right, 1) == size(right, 2) == size(smith, 1) == size(smith, 2)
   for k in 1:size(smith, 1)
@@ -55,8 +56,8 @@ function improve_row_pivot!(smith::Matrix{T}, right::Matrix{T},
   end
 end
 
-function diagonalize_at_entry!(left::Matrix{T}, smith::Matrix{T},
-                               right::Matrix{T}, row::Integer, col::Integer) where T <: Integer
+function diagonalize_at_entry!(left::AbstractMatrix{T}, smith::AbstractMatrix{T},
+                               right::AbstractMatrix{T}, row::Integer, col::Integer) where T <: Integer
   @assert size(right, 1) == size(right, 2) == size(smith, 1) == size(smith, 2)
   while countnz(smith[:, col]) > 1 || countnz(smith[row, :]) > 1
     improve_col_pivot!(left, smith, row, col)
@@ -79,7 +80,7 @@ function diagonalize_at_entry!(left::Matrix{T}, smith::Matrix{T},
   end
 end
 
-function diagonalize_all_entries!(left::Matrix{T}, smith::Matrix{T}, right::Matrix{T}) where T <: Integer
+function diagonalize_all_entries!(left::AbstractMatrix{T}, smith::AbstractMatrix{T}, right::AbstractMatrix{T}) where T <: Integer
   @assert size(smith, 1) == size(smith, 2)
   istep = 1
   col = choose_pivot!(left, smith, istep)
@@ -93,7 +94,7 @@ function diagonalize_all_entries!(left::Matrix{T}, smith::Matrix{T}, right::Matr
   return smith, left, right
 end
 
-function diagonalize_all_entries(smith::Matrix{T}) where T <: Integer
+function diagonalize_all_entries(smith::AbstractMatrix{T}) where T <: Integer
   smith = deepcopy(smith)
   left = eye(eltype(smith), size(smith, 1))
   right = eye(eltype(smith), size(smith, 2))
@@ -101,7 +102,7 @@ function diagonalize_all_entries(smith::Matrix{T}) where T <: Integer
   return smith, left, right
 end
 
-function move_zero_entries!(smith::Matrix{T}, right::Matrix{T}) where T <: Integer
+function move_zero_entries!(smith::AbstractMatrix{T}, right::AbstractMatrix{T}) where T <: Integer
   nonzero = find(1:size(smith, 2)) do i; any(smith[:, i] .≠ 0) end
   length(nonzero) == size(smith, 2) && return
   for (i, j) in enumerate(nonzero)
@@ -111,9 +112,9 @@ function move_zero_entries!(smith::Matrix{T}, right::Matrix{T}) where T <: Integ
   end
 end
 
-function make_divisible!(left::Matrix{T}, smith::Matrix{T}, right::Matrix{T}) where T <: Integer
+function make_divisible!(left::AbstractMatrix{T}, smith::AbstractMatrix{T}, right::Matrix{T}) where T <: Integer
   divides = x -> (smith[x, x] ≠ 0 && smith[x, x] % smith[x - 1, x - 1] ≠ 0)
-  while (i = findfirst(divides, 2:size(smith, 2))) ≠ 0
+  while (i = findfirst(divides, 2:size(smith, 2))) ≠ nothing
     (smith[i + 1, i + 1] == 0 || smith[i + 1, i + 1] % smith[i, i] == 0 ) && continue
     smith[:, i] += smith[:, i + 1]
     right[:, i] += right[:, i + 1]
@@ -121,7 +122,7 @@ function make_divisible!(left::Matrix{T}, smith::Matrix{T}, right::Matrix{T}) wh
   end
 end
 
-function smith_normal_form(matrix::Matrix{T}) where T <: Integer
+function smith_normal_form(matrix::AbstractMatrix{T}) where T <: Integer
   smith, left, right = diagonalize_all_entries(matrix)
   move_zero_entries!(smith, right)
   make_divisible!(left, smith, right)
@@ -130,12 +131,12 @@ function smith_normal_form(matrix::Matrix{T}) where T <: Integer
   smith, left, right
 end
 
-function smith_normal_form(matrix::Matrix{Quantity{I, D, U}}) where {I <: Integer, U, D}
+function smith_normal_form(matrix::AbstractMatrix{Quantity{I, D, U}}) where {I <: Integer, U, D}
     s, l, r = smith_normal_form(ustrip.(matrix))
     s * unit(Quantity{I, U, D}), l, r
 end
 
-function smith_normal_form(matrix::Matrix{Quantity{BigInt, D, U}}) where {D, U}
+function smith_normal_form(matrix::AbstractMatrix{Quantity{BigInt, D, U}}) where {D, U}
     m = reshape([ustrip(u) for u in matrix], size(matrix))
     s, l, r = smith_normal_form(m)
     s2 = reshape([Quantity{BigInt, D, U}(u) for u in s], size(s))

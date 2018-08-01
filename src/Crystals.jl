@@ -1,5 +1,6 @@
 module Crystals
 using Unitful
+using LinearAlgebra
 # using MicroLogging
 using Markdown
 export @u_str

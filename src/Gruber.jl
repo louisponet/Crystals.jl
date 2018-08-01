@@ -7,6 +7,7 @@ import Crystals.Structures: Crystal, volume
 import Unitful: unit, ustrip, Quantity
 # using MicroLogging
 using ArgCheck
+using LinearAlgebra
 
 function no_opt_change_test(new, last)
     m_new = 16e0 * new;

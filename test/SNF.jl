@@ -28,11 +28,11 @@
       left = eye(eltype(smith), 3)
       Crystals.SNF.improve_col_pivot!(left, smith, 1, 1)
       @test left == eye(eltype(smith), 3)
-      @test smith == [1 0 4; 0 2 12; 0 -4 -16]   
+      @test smith == [1 0 4; 0 2 12; 0 -4 -16]
 
       Crystals.SNF.improve_col_pivot!(left, smith, 2, 2)
       @test left == eye(eltype(smith), 3)
-      @test smith == [1 0 4; 0 2 12; 0 -4 -16]   
+      @test smith == [1 0 4; 0 2 12; 0 -4 -16]
     end
 
     @testset ">>> Create multiple" begin
@@ -117,7 +117,7 @@
         BigInt[0 -4 -5; 0 0 -4; 0 3 -1],
         BigInt[2 4 4; -6 6 12; 10 -4 -16],
         BigInt[-5 -5 2 -2; -4 -4 0 -1; -1 -1 4 -1; 0 -4 4 -4]
-      ], 
+      ],
       Any[rand(-BigInt(5):5, tuple(repeat(rand(2:5, (1, )), inner=[2])...)) for u in 1:10]
     )
     @testset ">>> try $matrix" for matrix in matrices
@@ -125,7 +125,7 @@
       @test isdiag(smith)
       @test left * matrix * right == smith
       k = findfirst(x -> x == 0, diag(smith))
-      if k ≠ 0
+      if k ≠ nothing
       @test countnz(diag(smith)[k:end]) == 0
       else
         k = size(smith, 2) + 1

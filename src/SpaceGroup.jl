@@ -2,6 +2,7 @@ module SpaceGroup
 using DocStringExtensions
 export point_group, is_primitive, primitive, space_group
 
+using LinearAlgebra
 import Crystals.Constants: default_tolerance
 import Crystals.Structures: Crystal, volume
 import Crystals.Gruber: gruber

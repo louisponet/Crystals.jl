@@ -2,7 +2,7 @@ module CrystalAtoms
 import Crystals.Structures: Crystal, position_for_crystal
 export eachatom
 import DataFrames
-
+using LinearAlgebra
 """ Wrapper around a row/atom in a Crystal for iteration """
 struct CrystalAtom{PARENT <: Crystal}
     """ Parent crystal """

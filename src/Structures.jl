@@ -1,6 +1,7 @@
 module Structures
 # using MicroLogging
 using DocStringExtensions
+using LinearAlgebra
 export AbstractCrystal, Crystal, is_fractional, volume, are_compatible_lattices, round!
 import Unitful
 import Unitful: Quantity, Dimensions, Units, unit, ustrip, dimension, unit
@@ -61,12 +62,12 @@ function Crystal(cell::Matrix{Quantity{C, D, U}}; kwargs...) where {C, D, U}
     dpositions = collect(filter(x -> x[1] ∈ (:position, :positions), kwargs))
     tpositions = collect(filter(x -> x[1] ∈ (:tposition, :tpositions), kwargs))
     if length(dpositions) ≠ 0 && length(tpositions) ≠ 0
-        positions = hcat((x[2] for x in dpositions)...,
-                               transpose(hcat([x[2] for x in tpositions]...)))
+        positions = collect(hcat((x[2] for x in dpositions)...,
+                               transpose(hcat([x[2] for x in tpositions]...))))
     elseif length(dpositions) ≠ 0
         positions = hcat([x[2] for x in dpositions]...)
     elseif length(tpositions) ≠ 0
-        positions = transpose(hcat([x[2] for x in tpositions]...))
+        positions = collect(transpose(hcat([x[2] for x in tpositions]...))) #FIXME: could be more useful to have an extra type parameter allowing for AbstractMatrix.
     else
         positions = Matrix{Quantity{C, D, U}}(size(cell, 1), 0)
     end
@@ -658,8 +659,7 @@ Rounds the cell and positions of a crystal. See `Base.round` for possible parame
 ```jldoctest
 using Crystals
 crystal = Crystal([0 0.501 0.501; 0.496 0.001 0.497; 0.497 0.497 0]u"nm",
-                  position=[0.001, -0.001, -0.001]u"nm",
-                  position=[0.25, 0.251, -0.247]u"nm")
+                  tposition=[0.001 -0.001 -0.001; 0.25 0.251 -0.247]u"nm")
 round(crystal, 2)
 
 # output
