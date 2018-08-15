@@ -3,7 +3,7 @@ using Crystals.Utilities: eldimension, CellParameters
 
 @testset "> Hart-Forcade" begin
     lattice = Crystal([0 0.5 0.5; 0.5 0 0.5; 0.5 0.5 0]u"nm", position=[0, 0, 0]u"nm")
-    crystal = Crystal([1 0 0; 0 1 0; 0 0 1]u"nm",
+    global crystal = Crystal([1 0 0; 0 1 0; 0 0 1]u"nm",
                       tposition=[0 0 0; 0.5 0.5 0; 0.5 0 0.5; 0 0.5 0.5]u"nm")
     hf = @inferred(hart_forcade(lattice.cell, crystal.cell))
     @test hf.quotient == [1, 2, 2]
