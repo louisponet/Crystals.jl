@@ -30,7 +30,7 @@ eachatom(crystal::Crystal) = AtomicIterator(crystal)
 """ Iterator over each atom in the crystal """
 DataFrames.eachrow(crystal::Crystal) = eachatom(crystal)
 
-Base.iterate(itr::AtomicIterator, i::Integer=1) = i > size(itr.parent, 1) ? nothing : (CrystalAtom(itr.parent, i), i + 1)
+Base.iterate(itr::AtomicIterator, i::Integer=1) = i > length(itr.parent) ? nothing : (CrystalAtom(itr.parent, i), i + 1)
 Base.size(itr::AtomicIterator) = (length(itr.parent), )
 
 Base.length(itr::AtomicIterator) = size(itr.parent, 1)

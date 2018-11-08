@@ -419,7 +419,7 @@ Base.size(crystal::Crystal, i::Integer) = size(crystal)[i]
 Base.ndims(::Crystal) = 2
 DataFrames.nrow(crystal::Crystal) = size(crystal.positions, 2)
 DataFrames.ncol(crystal::Crystal) = ncol(crystal.properties) + 1
-Base.endof(crystal::Crystal) = nrow(crystal)
+# Base.endof(crystal::Crystal) = nrow(crystal)
 
 function Base.copy(crystal::Crystal)
     typeof(crystal)(copy(crystal.cell), copy(crystal.positions), copy(crystal.properties))

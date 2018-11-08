@@ -38,13 +38,13 @@ end
 
 
 function n1_action(params::Vector, rinv::Matrix)
-    rinv[:, :] = rinv * [0 -1 0; -1 0 0; 0 0 -1]
+    rinv .= rinv * [0 -1 0; -1 0 0; 0 0 -1]
     params[1], params[2] = params[2], params[1]
     params[4], params[5] = params[5], params[4]
 end
 
 function n2_action(params::Vector, rinv::Matrix)
-    rinv[:, :] = rinv * [-1 0 0; 0 0 -1; 0 -1 0]
+    rinv .= rinv * [-1 0 0; 0 0 -1; 0 -1 0]
     params[2], params[3] = params[3], params[2]
     params[5], params[6] = params[6], params[5]
 end
@@ -53,7 +53,7 @@ function n3_action(params::Vector, rinv::Matrix; tolerance=default_tolerance)
     i = params[4] ≤ -tolerance ? -1 : 1
     j = params[5] ≤ -tolerance ? -1 : 1
     k = params[6] ≤ -tolerance ? -1 : 1
-    rinv[:, :] = rinv * [i 0 0; 0 j 0; 0 0 k]
+    rinv .= rinv * [i 0 0; 0 j 0; 0 0 k]
     params[4:end] = abs.(params[4:end])
 end
 
@@ -145,7 +145,7 @@ function gruber(cell::Matrix{T};
     ε = tolerance
     metric = transpose(cell) * cell
     params = vcat(diag(metric), [2metric[2, 3], 2metric[1, 3], 2metric[1, 2]])
-    rinv = eye(size(metric, 1))
+    rinv = Matrix{Float64}(I, size(metric))
     no_change, previous = 0, -params[1:3]
     iteration::Int = 0
     totits = 0
